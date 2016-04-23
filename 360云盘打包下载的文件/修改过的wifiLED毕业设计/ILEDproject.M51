@@ -1,0 +1,278 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        04/25/2015  15:06:12  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+D:\APPLICATION  LOCATION\KEIL\C51\BIN\BL51.EXE Iled1.obj TO ILEDproject
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  Iled1.obj (ILED1)
+  D:\APPLICATION  LOCATION\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  ILEDproject (ILED1)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0002H     UNIT         ?DT?ILED1
+            DATA    000AH     0002H     UNIT         _DATA_GROUP_
+            IDATA   000CH     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     00F3H     UNIT         ?PR?MAIN?ILED1
+            CODE    00F6H     001AH     UNIT         ?PR?_DELAYMS?ILED1
+            CODE    0110H     0013H     UNIT         ?PR?UARTINIT?ILED1
+            CODE    0123H     0012H     UNIT         ?PR?INIT_PWM?ILED1
+            CODE    0135H     000DH     UNIT         ?PR?PWM0_SET?ILED1
+            CODE    0142H     000CH     UNIT         ?C_C51STARTUP
+            CODE    014EH     0004H     UNIT         ?CO?ILED1
+
+
+
+OVERLAY MAP OF MODULE:   ILEDproject (ILED1)
+
+
+SEGMENT                          DATA_GROUP 
+  +--> CALLED SEGMENT          START    LENGTH
+----------------------------------------------
+?C_C51STARTUP                  -----    -----
+  +--> ?PR?MAIN?ILED1
+
+?PR?MAIN?ILED1                 000AH    0002H
+  +--> ?PR?UARTINIT?ILED1
+  +--> ?PR?INIT_PWM?ILED1
+  +--> ?PR?PWM0_SET?ILED1
+
+
+
+SYMBOL TABLE OF MODULE:  ILEDproject (ILED1)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ILED1
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/25/2015  15:06:12  PAGE 2
+
+
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  C:014EH         PUBLIC        table
+  D:00F9H         PUBLIC        CH
+  C:0123H         PUBLIC        init_PWM
+  D:00A8H         PUBLIC        IE
+  D:00E9H         PUBLIC        CL
+  D:00FAH         PUBLIC        CCAP0H
+  D:00FBH         PUBLIC        CCAP1H
+  D:00EAH         PUBLIC        CCAP0L
+  B:00D8H.6       PUBLIC        CR
+  D:00EBH         PUBLIC        CCAP1L
+  D:00DAH         PUBLIC        CCAPM0
+  D:00DBH         PUBLIC        CCAPM1
+  D:00B8H         PUBLIC        IP
+  B:0098H.0       PUBLIC        RI
+  D:00D9H         PUBLIC        CMOD
+  D:00D8H         PUBLIC        CCON
+  C:0003H         PUBLIC        main
+  D:0099H         PUBLIC        SBUF
+  D:0087H         PUBLIC        PCON
+  C:00F6H         PUBLIC        _DelayMs
+  D:0098H         PUBLIC        SCON
+  C:0110H         PUBLIC        UartInit
+  D:0088H         PUBLIC        TCON
+  D:008EH         PUBLIC        AUXR
+  C:0135H         PUBLIC        PWM0_set
+  D:0008H         PUBLIC        blueclor
+  D:009CH         PUBLIC        BRT
+  D:0009H         PUBLIC        redclor
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          _DELAYMS
+  D:0007H         SYMBOL        ms
+  -------         DO            
+  D:0004H         SYMBOL        i
+  -------         ENDDO         
+  C:00F6H         LINE#         15
+  C:00F6H         LINE#         16
+  C:00F6H         LINE#         18
+  C:00FCH         LINE#         19
+  C:00FCH         LINE#         20
+  C:010FH         LINE#         21
+  C:010FH         LINE#         23
+  -------         ENDPROC       _DELAYMS
+  -------         PROC          PWM0_SET
+  C:0135H         LINE#         25
+  C:0135H         LINE#         26
+  C:0135H         LINE#         28
+  C:0138H         LINE#         29
+  C:013BH         LINE#         30
+  C:013EH         LINE#         31
+  C:0141H         LINE#         32
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/25/2015  15:06:12  PAGE 3
+
+
+  -------         ENDPROC       PWM0_SET
+  -------         PROC          INIT_PWM
+  C:0123H         LINE#         34
+  C:0123H         LINE#         35
+  C:0123H         LINE#         36
+  C:0126H         LINE#         37
+  C:0128H         LINE#         38
+  C:012AH         LINE#         39
+  C:012DH         LINE#         40
+  C:0130H         LINE#         41
+  C:0132H         LINE#         42
+  C:0134H         LINE#         44
+  -------         ENDPROC       INIT_PWM
+  -------         PROC          UARTINIT
+  C:0110H         LINE#         46
+  C:0110H         LINE#         47
+  C:0110H         LINE#         48
+  C:0113H         LINE#         49
+  C:0116H         LINE#         50
+  C:0119H         LINE#         51
+  C:011CH         LINE#         52
+  C:011FH         LINE#         53
+  C:0122H         LINE#         54
+  -------         ENDPROC       UARTINIT
+  -------         PROC          MAIN
+  -------         DO            
+  D:0006H         SYMBOL        RECV
+  D:000AH         SYMBOL        a
+  -------         ENDDO         
+  C:0003H         LINE#         56
+  C:0003H         LINE#         57
+  C:0003H         LINE#         59
+  C:0006H         LINE#         60
+  C:0009H         LINE#         61
+  C:000CH         LINE#         62
+  C:000EH         LINE#         63
+  C:0010H         LINE#         64
+  C:0012H         LINE#         65
+  C:0015H         LINE#         66
+  C:0018H         LINE#         67
+  C:001BH         LINE#         70
+  C:001BH         LINE#         71
+  C:001BH         LINE#         72
+  C:001EH         LINE#         73
+  C:001EH         LINE#         75
+  C:0022H         LINE#         82
+  C:0027H         LINE#         83
+  C:0027H         LINE#         84
+  C:0029H         LINE#         85
+  C:002BH         LINE#         86
+  C:002DH         LINE#         87
+  C:002FH         LINE#         88
+  C:0031H         LINE#         89
+  C:0031H         LINE#         92
+  C:0037H         LINE#         93
+  C:0037H         LINE#         94
+  C:0039H         LINE#         95
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/25/2015  15:06:12  PAGE 4
+
+
+  C:003BH         LINE#         96
+  C:003EH         LINE#         97
+  C:0041H         LINE#         98
+  C:0044H         LINE#         99
+  C:0044H         LINE#         100
+  C:004AH         LINE#         101
+  C:004AH         LINE#         102
+  C:004CH         LINE#         103
+  C:004EH         LINE#         104
+  C:0051H         LINE#         105
+  C:0054H         LINE#         106
+  C:0057H         LINE#         107
+  C:0057H         LINE#         108
+  C:005DH         LINE#         109
+  C:005DH         LINE#         110
+  C:005FH         LINE#         111
+  C:0061H         LINE#         112
+  C:0064H         LINE#         113
+  C:0067H         LINE#         114
+  C:006AH         LINE#         115
+  C:006AH         LINE#         116
+  C:0070H         LINE#         117
+  C:0070H         LINE#         118
+  C:0072H         LINE#         119
+  C:0074H         LINE#         120
+  C:0077H         LINE#         121
+  C:007AH         LINE#         122
+  C:007DH         LINE#         123
+  C:007DH         LINE#         124
+  C:0083H         LINE#         125
+  C:0083H         LINE#         126
+  C:0085H         LINE#         127
+  C:0087H         LINE#         128
+  C:008AH         LINE#         129
+  C:008DH         LINE#         130
+  C:0090H         LINE#         131
+  C:0090H         LINE#         132
+  C:0096H         LINE#         133
+  C:0096H         LINE#         134
+  C:0098H         LINE#         135
+  C:009AH         LINE#         136
+  C:009DH         LINE#         137
+  C:00A0H         LINE#         138
+  C:00A3H         LINE#         139
+  C:00A3H         LINE#         140
+  C:00A9H         LINE#         141
+  C:00A9H         LINE#         142
+  C:00ABH         LINE#         143
+  C:00ADH         LINE#         144
+  C:00B0H         LINE#         145
+  C:00B3H         LINE#         146
+  C:00B6H         LINE#         147
+  C:00B6H         LINE#         148
+  C:00BCH         LINE#         149
+  C:00BCH         LINE#         150
+  C:00BEH         LINE#         151
+  C:00C0H         LINE#         152
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/25/2015  15:06:12  PAGE 5
+
+
+  C:00C3H         LINE#         153
+  C:00C6H         LINE#         154
+  C:00C9H         LINE#         155
+  C:00C9H         LINE#         156
+  C:00CFH         LINE#         157
+  C:00CFH         LINE#         158
+  C:00D1H         LINE#         159
+  C:00D3H         LINE#         160
+  C:00D6H         LINE#         161
+  C:00D9H         LINE#         162
+  C:00DCH         LINE#         163
+  C:00DCH         LINE#         188
+  C:00E2H         LINE#         189
+  C:00E2H         LINE#         190
+  C:00E4H         LINE#         191
+  C:00E7H         LINE#         192
+  C:00EAH         LINE#         193
+  C:00EDH         LINE#         194
+  C:00EFH         LINE#         195
+  C:00F1H         LINE#         196
+  C:00F1H         LINE#         197
+  C:00F3H         LINE#         199
+  C:00F3H         LINE#         201
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        ILED1
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?ILED1
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?CO?ILED1
+
+Program Size: data=13.0 xdata=0 code=338
+LINK/LOCATE RUN COMPLETE.  2 WARNING(S),  0 ERROR(S)

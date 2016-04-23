@@ -1,0 +1,234 @@
+C51 COMPILER V9.00   ILED1                                                                 04/25/2015 15:06:10 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE ILED1
+OBJECT MODULE PLACED IN Iled1.OBJ
+COMPILER INVOKED BY: D:\application  location\keil\C51\BIN\C51.EXE Iled1.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include"stc12c5a60s2.h"
+   2          #define uint unsigned int 
+   3          #define uchar unsigned char
+   4          
+   5          sbit AddPWM=P1^0;                 //Í¨¹ýP10£¬P11µÍµçÆ½£¨°´¼ü£©¼Ó¼õPWMÕ¼¿Õ±È
+   6          sbit CutPWM=P1^1;
+   7          void DelayMs(uchar  ms);
+   8          void init_PWM();
+   9          void Uart_SendData(uchar dat);
+  10          void PWM0_change(uchar type,uchar change);
+  11          void PWM0_set(void);
+  12          uchar code table[]={'1','2','3','4'};
+  13           uchar redclor, blueclor;
+  14                                                                    
+  15          void DelayMs(uchar ms)            //Õâ¸öÑÓÊ±¿ÉÄÜ²»¶Ô£¬·Ç¹Ø¼ü²¿·Ö£¬¿É×Ô¼ºÐÞ¸Ä
+  16          {
+  17   1       uint i;
+  18   1       while(ms--)
+  19   1       {
+  20   2        for(i=0;i<850;i++);
+  21   2       }
+  22   1       
+  23   1      }
+  24          
+  25          void PWM0_set(void) //Ö±½ÓÉèÖÃÕ¼¿Õ±È
+  26          {
+  27   1       
+  28   1       CCAP0L=blueclor;   //  À¶É«
+  29   1       CCAP0H=blueclor;
+  30   1       CCAP1L=redclor;                                            
+  31   1       CCAP1H=redclor;
+  32   1      }
+  33          
+  34          void init_PWM()
+  35          {
+  36   1       CCON=0X00;
+  37   1       CH=0;
+  38   1       CL=0;
+  39   1       CMOD=0X08;        //0X00£ºÒÔÏµÍ³Ê±ÖÓ/12ÎªÊ±ÖÓÔ´£¬0X02£ºÏµÍ³Ê±ÖÓ/2£¬0x08£ºÏµÍ³Ê±ÖÓ/8   ºìÉ«
+  40   1       CCAPM1=0x42;                 //PCA_PWM0=0x00;//¿ØÖÆÕ¼¿Õ±ÈµÄµÚ¾ÅÎ»Îª0
+  41   1       CCAPM0=0X00;      //0X42£º8Î»PWM?P1.3Êä³ö,ÎÞÖÐ¶Ï£»0X53£º8Î»PWMÊä³ö£¬ÏÂ½µÑØ²úÉúÖÐ¶Ï£»0X63£ºÉÏÉýÑØ²úÉúÖÐ¶Ï£
+             -»0X73£ºÌø±äÑØ²úÉúÖÐ¶Ï
+  42   1       CR=0;             //¼ÆÊ±Æ÷¿ªÊ¼¹¤×÷
+  43   1       //PWM0_set(0X00,0x00);   //ÆðÊ¼Õ¼¿Õ±È£¬0XC0:Õ¼¿Õ±ÈÎª25%£¬0X80:Õ¼¿Õ±ÈÎª50%£¬0X40:Õ¼¿Õ±ÈÎª75%?
+  44   1      }
+  45          
+  46          void UartInit(void)             //115200bps@11.0592MHz
+  47          {
+  48   1              PCON &= 0x7f;  //²¨ÌØÂÊ²»±¶ËÙ
+  49   1         SCON = 0x50;  //8Î»Êý¾Ý,¿É±ä²¨ÌØÂÊ
+  50   1         BRT = 0xFD;      //Éè¶¨¶ÀÁ¢²¨ÌØÂÊ·¢ÉúÆ÷ÖØ×°Öµ
+  51   1         AUXR |= 0x04;  //¶ÀÁ¢²¨ÌØÂÊ·¢ÉúÆ÷Ê±ÖÓÎªFosc,¼´1T
+  52   1         AUXR |= 0x01;  //´®¿Ú1Ñ¡Ôñ¶ÀÁ¢²¨ÌØÂÊ·¢ÉúÆ÷Îª²¨ÌØÂÊ·¢ÉúÆ÷
+  53   1         AUXR |= 0x10;  //Æô¶¯¶ÀÁ¢²¨ÌØÂÊ·¢ÉúÆ÷
+  54   1      }
+C51 COMPILER V9.00   ILED1                                                                 04/25/2015 15:06:10 PAGE 2   
+
+  55          
+  56          void main()
+  57          {       
+  58   1          uint RECV,a;
+  59   1          UartInit();
+  60   1              init_PWM();
+  61   1                 P2=0X00;
+  62   1                 P1=0X00;
+  63   1                 CCAPM1=0x00;                 //PCA_PWM0=0x00;//¿ØÖÆÕ¼¿Õ±ÈµÄµÚ¾ÅÎ»Îª0
+  64   1             CCAPM0=0X00;
+  65   1                 redclor=0xff;
+  66   1                 blueclor=0xff;
+  67   1                 PWM0_set();
+  68   1                 
+  69   1      /*µ¥Æ¬»ú´®¿Ú½ÓÊÕ¼à²â³ÌÐò*/
+  70   1          while(1)
+  71   1          {
+  72   2            if(RI==1)
+  73   2                {
+  74   3                
+  75   3                  RECV=SBUF ;
+  76   3      //          if(RECV=='1')
+  77   3      //          {
+  78   3      //            CR = 1 ;
+  79   3      //                P2=0X00;
+  80   3      //            //SBUF=0;
+  81   3      //          }
+  82   3                  if(RECV=='0')
+  83   3              {
+  84   4                    CR=0;
+  85   4                        P2=0X00;
+  86   4                        P1=0X00;
+  87   4                        CCAPM1=0x00;
+  88   4                        CCAPM0=0x00;
+  89   4                  }
+  90   3      
+  91   3              
+  92   3                      if(RECV=='1')
+  93   3              {
+  94   4                    CR=1;
+  95   4                        P2=0X00;
+  96   4                        blueclor=0xef;
+  97   4                        PWM0_set();
+  98   4                        CCAPM0=0x42;
+  99   4                  }
+ 100   3                      if(RECV=='2')
+ 101   3              {
+ 102   4                    CR=1;
+ 103   4                        P2=0X00;
+ 104   4                        blueclor=0xaf;
+ 105   4                        PWM0_set();
+ 106   4                        CCAPM0=0x42;
+ 107   4                  }
+ 108   3                      if(RECV=='3')
+ 109   3              {
+ 110   4                    CR=1;
+ 111   4                        P2=0X00;
+ 112   4                        blueclor=0x7f;
+ 113   4                        PWM0_set();
+ 114   4                        CCAPM0=0x42;
+ 115   4                  }
+ 116   3                      if(RECV=='4')
+C51 COMPILER V9.00   ILED1                                                                 04/25/2015 15:06:10 PAGE 3   
+
+ 117   3              {
+ 118   4                    CR=1;
+ 119   4                        P2=0X00;
+ 120   4                        blueclor=0x3f;
+ 121   4                        PWM0_set();
+ 122   4                        CCAPM0=0x42;
+ 123   4                  }
+ 124   3                      if(RECV=='5')
+ 125   3              {
+ 126   4                    CR=1;
+ 127   4                        P2=0X00;
+ 128   4                        redclor=0xef;
+ 129   4                        PWM0_set();
+ 130   4                        CCAPM1=0x42;
+ 131   4                  }
+ 132   3                      if(RECV=='6')
+ 133   3              {
+ 134   4                    CR=1;
+ 135   4                        P2=0X00;
+ 136   4                        redclor=0xaf;
+ 137   4                        PWM0_set();
+ 138   4                        CCAPM1=0x42;
+ 139   4                  }
+ 140   3                      if(RECV=='7')
+ 141   3              {
+ 142   4                    CR=1;
+ 143   4                        P2=0X00;
+ 144   4                        redclor=0x8f;
+ 145   4                        PWM0_set();
+ 146   4                        CCAPM1=0x42;
+ 147   4                  }
+ 148   3                      if(RECV=='8')
+ 149   3              {
+ 150   4                    CR=1;
+ 151   4                        P2=0X00;
+ 152   4                        redclor=0x4f;
+ 153   4                        PWM0_set();
+ 154   4                        CCAPM1=0x42;
+ 155   4                  }
+ 156   3                      if(RECV=='9')
+ 157   3              {
+ 158   4                    CR=1;
+ 159   4                        P2=0X00;
+ 160   4                        redclor=0x1f;
+ 161   4                        PWM0_set();
+ 162   4                        CCAPM1=0x42;
+ 163   4                  }
+ 164   3      //              if(RECV=='')
+ 165   3      //      {
+ 166   3      //            CR=1;
+ 167   3      //                P2=0X00;
+ 168   3      //                PWM0_set(0X00,0XFF);
+ 169   3      //                CCAPM1=0x42;
+ 170   3      //                CCAPM0=0x00;
+ 171   3      //          }
+ 172   3      //              if(RECV=='R')
+ 173   3      //        {
+ 174   3      //            CR=1;
+ 175   3      //                P2=0X00;
+ 176   3      //                PWM0_set(0X00,0XFF);
+ 177   3      //                CCAPM1=0x42;
+ 178   3      //                CCAPM0=0x00;
+C51 COMPILER V9.00   ILED1                                                                 04/25/2015 15:06:10 PAGE 4   
+
+ 179   3      //          }
+ 180   3      //              if(RECV=='G')
+ 181   3      //        {
+ 182   3      //            CR=0;
+ 183   3      //                P2=0X08;
+ 184   3      //                PWM0_set(0XFF,0XFF);
+ 185   3      //                CCAPM1=0x00;
+ 186   3      //                CCAPM0=0x00;
+ 187   3      //          }
+ 188   3                      if(RECV=='W')
+ 189   3              {
+ 190   4                    CR=0;
+ 191   4                        P2=0X04;
+ 192   4                        redclor=0xff;
+ 193   4                        blueclor=0xff;
+ 194   4                        CCAPM1=0x00;
+ 195   4                        CCAPM0=0x00;
+ 196   4                  }
+ 197   3                  RI=0 ;
+ 198   3              
+ 199   3              }   
+ 200   2      
+ 201   2         }
+ 202   1      
+ 203   1      }
+*** WARNING C280 IN LINE 58 OF ILED1.C: 'a': unreferenced local variable
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    319    ----
+   CONSTANT SIZE    =      4    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

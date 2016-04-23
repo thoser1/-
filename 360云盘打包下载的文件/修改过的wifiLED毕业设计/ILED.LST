@@ -1,0 +1,99 @@
+C51 COMPILER V9.52.0.0   ILED                                                              01/08/2015 17:13:17 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE ILED
+OBJECT MODULE PLACED IN ILED.OBJ
+COMPILER INVOKED BY: D:\Program Files\C51\BIN\C51.EXE ILED.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include"stc12c5a60s2.h"
+   2          
+   3          #define uchar unsigned char 
+   4          #define uint  unsigned int
+   5          #define  RIN   P2^3
+   6          #define  GIN   P2^2
+   7          
+   8          //sfr  CCON =0xD8;//PCA控制寄存器?
+   9          //sbit CCF0 =CCON^0;
+  10          //sbit CCF1 =CCON^1;
+  11          //sbit CR   =CCON^6;
+  12          //sbit CF   =CCON^7;
+  13          //sfr CMOD  =0xD9;//PCA工作模式寄存器
+  14          //sfr CL    =0xE9;//PCA?base?timer?LOW??
+  15          //sfr CH    =0xF9;//PCA?base?timer?HIGH??
+  16          //sfr CCAPM0=0xDA;//PCA模块0的比较/捕获寄存器??
+  17          //sfr CCAP0L=0xEA;//PCA?module-0?capture?register?LOW??
+  18          //sfr CCAP0H=0xFA;//PCA?module-0?capture?register?HIGH??
+  19          //sfr CCAPM1=0xDB;//PCA?module-1?mode?register??
+  20          //sfr CCAP1L=0xEB;//PCA?module-1?capture?register?LOW??
+  21          //sfr CCAP1H=0xFB;//PCA?module-1?capture?register?HIGH??
+  22          sfr PCAPWM0=0xf2;
+  23          sfr PCAPWM1=0xf3;
+  24          
+  25          void PWMINIT(void);//PWM初值化
+  26          void PWMDR(uchar x,uchar y); //调整占空比；x,y值越小正占空比越大?
+  27          void delay_50us(uint t);
+  28          void delay_50ms(uchar t);
+  29          void delay_1ms(uchar b);
+  30          void delay_50us(uint t)
+  31          {
+  32   1       uchar j;
+  33   1       for(;t>0;t--)
+  34   1       for(j=19;j>0;j--);
+  35   1      }
+  36          void delay_1ms(uchar b) 
+  37          {
+  38   1       uchar i;
+  39   1       i=125;
+  40   1       while(b--)
+  41   1       {
+  42   2        while(i--);
+  43   2       }
+  44   1       
+  45   1      }
+  46          
+  47          void delay_50ms(uchar t)
+  48          {
+  49   1       uint j;
+  50   1       for(;t>0;t--)
+  51   1       for(j=6245;j>0;j--);
+  52   1       }
+  53          char code PWMNUM[]={0x00,0x08,0x10,0x18,0x22,0x30,0x38,0x40,0x48,0x50,0x60,0x60,0x68,0x70,0x78,0x80,0x88,0
+             -x90,0x98,0xa0,0xa8,0xb0,0xb8,0xc0,0xc8,0xff};
+  54          void PWMINIT(void)
+C51 COMPILER V9.52.0.0   ILED                                                              01/08/2015 17:13:17 PAGE 2   
+
+  55          {
+  56   1       CCON =0;//Initial?PCA?control?register??
+  57   1       CL   =0;//Reset?PCA?base?timer??????CH?=?0;??
+  58   1       CMOD =0x02;//Set?PCA?timer?clock?source?as?Fosc/2???
+  59   1       CCAPM0=0x42;//PCA?module-0?work?in?8-bit?PWM?mode
+  60   1       CCAPM1=0x42;//PCA?module-1?work?in?8-bit?PWM?mode??
+  61   1       CR=1;//PCA?timer?start?run
+  62   1      
+  63   1      }
+  64          
+  65          void PWMDR(uchar x,uchar y)//x,y值越小正占空比越大
+  66          {
+  67   1       CCAP0H=CCAP0L=PWMNUM[x];//P1.3输出??
+  68   1       CCAP1H=CCAP1L=PWMNUM[y];//P1.4输出
+  69   1      }
+  70          void main()
+  71          {
+  72   1       PWMINIT();
+  73   1       while(1)
+  74   1       {
+  75   2        PWMDR(1,2);
+  76   2       }
+  77   1       
+  78   1      }
+  79          
+  80          #define U8 unsigned char#define U8 unsigned char#define U16 unsigned intvoid DelayMs(U8 ms);void PWM
+             -_clock(U8 clock);void PWM_start(U8 module,U8 mode);////////////////////// 延时子程序/////////////////////////////voi
+             -d DelayMs(U8 ms) //在11.0592M晶振下，stc10f系列（单周期指令）的ms级延时{              U16 i;        while(ms--)        {                for(i = 0; i <
+             - 850; i++);        }}
+*** ERROR C141 IN LINE 80 OF ILED.c: syntax error near '#'
+*** ERROR C129 IN LINE 80 OF ILED.c: missing ';' before 'U8'
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  2 ERROR(S)

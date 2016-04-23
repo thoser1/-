@@ -1,0 +1,447 @@
+C51 COMPILER V8.08   4                                                                     07/06/2015 10:10:54 PAGE 1   
+
+
+C51 COMPILER V8.08, COMPILATION OF MODULE 4
+OBJECT MODULE PLACED IN 4.OBJ
+COMPILER INVOKED BY: E:\keil\C51\BIN\C51.EXE 4.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <c8051f360.h>
+   2          #include <stdio.h>
+   3          #include<math.h>
+   4          #include <absacc.h>
+   5          
+   6          #define WDATADDR XBYTE[0XC009]                          //LCD写数据地址
+   7          #define RDATADDR XBYTE[0XC00B]                          //LCD读数据地址
+   8          #define WCOMADDR XBYTE[0XC008]                          //LCD写命令地址
+   9          #define RCOMADDR XBYTE[0XC00A]                          //LCD读命令地址
+  10          #define KEYCS    XBYTE[0XC00C]                          //键盘片选地址
+  11          #define T_C      40
+  12          sbit LCD_RST=P3^0;
+  13          sbit CHUFA=P0^6;
+  14          
+  15          
+  16          unsigned char    F_DISP[]={"00000%"};
+  17          unsigned char    F_DISPLOW[]={"00000HZ    "};
+  18          unsigned char    F_DISPLOWHIGH[]={"00000HZ   "}  ;
+  19          unsigned char    F_DISPHIGH[]={"0000HZ     "} ;
+  20          unsigned char    F_DISPHIGHONE[]={"00000 kHZ"};
+  21          unsigned char code TAB_WORD[]={"信号频率为"};
+  22          unsigned char  F_DISPHIGHTHREE[]={"00000 MHZ"};
+  23          unsigned char   count[11]={ 0,0,0,0,0,0,0,0,0,0,0};                       
+  24          unsigned long n=0;
+  25          unsigned long m=0;
+  26          unsigned char fp;
+  27          unsigned long f;
+  28          unsigned char f1;
+  29          bit flag=0;
+  30          
+  31          
+  32          unsigned char key_num=0xff;                                     //存键号
+  33          
+  34          void OSC_INIT (void)                    //内部振荡器初始化
+  35          {
+  36   1              SFRPAGE=0X0F;
+  37   1              OSCICL=OSCICL+5;
+  38   1              OSCICN=0XC3;
+  39   1              CLKSEL=0X30;
+  40   1              SFRPAGE=0;
+  41   1      
+  42   1      }
+  43          //********************************************
+  44          void IO_INIT(void)                                         //I/O端口初始化              ，1为数字，0为模拟，1是推拉式，1是被开关跳过，0是不被交叉开关跳
+             -过。
+  45          {
+  46   1              SFRPAGE=0X0F;
+  47   1              P0MDIN=0Xe7;                                    //P0.3-P0.4设置为模拟量输入
+  48   1              P0MDOUT=0X83;                                   //P0.0，P0.1，P0.7推拉式输出
+  49   1              P0SKIP=0XF9;                                    //P0.1，P0.2不被交叉开关跳过
+  50   1      
+  51   1              P1MDIN=0XFF;                                      //   P1数字量输入
+  52   1              P1MDOUT=0XFF;                                             //P1推拉式输出
+  53   1              P1SKIP=0XFF;                               //P1交叉开关跳过
+  54   1      
+C51 COMPILER V8.08   4                                                                     07/06/2015 10:10:54 PAGE 2   
+
+  55   1              P2MDIN=0XFE;
+  56   1              P2MDOUT=0XFF;
+  57   1              P2SKIP=0XFF;
+  58   1      
+  59   1              P3MDIN=0XFF;
+  60   1              P3MDOUT=0XFF;
+  61   1              P3SKIP=0XF9;                    //0xfd，增加P3.2作T1输入
+  62   1      
+  63   1              P4MDOUT=0XFF;
+  64   1              
+  65   1              XBR0=0X09;
+  66   1              XBR1=0Xe0;                              //0xc0,增加T1
+  67   1              SFRPAGE=0X0;
+  68   1      }
+  69          //********************************************
+  70          void XRAM_INIT(void)               //外部数据存储器接口初始化
+  71          {
+  72   1              SFRPAGE=0X0F;
+  73   1              EMI0CF=0X07;
+  74   1              SFRPAGE=0;
+  75   1      }
+  76          //********************************************
+  77          void SMB_INIT(void)
+  78          {
+  79   1              SMB0CF=0XC1;
+  80   1      
+  81   1      }
+  82          //********************************************
+  83          void UART_INIT(void)
+  84          {
+  85   1                      SCON0=0X0;
+  86   1      }
+  87          //********************************************
+  88          void DAC_INIT(void)                                     //IDA0控制寄存器
+  89          {
+  90   1              IDA0CN=0XF2;                                      //写IDA0H触发DAC更新
+  91   1      }
+  92          //********************************************
+  93          void ADC_INIT(void)
+  94          {
+  95   1              REF0CN=0;                               //VDD为基准
+  96   1              AMX0P=0X08;                             //正端接P20
+  97   1              AMX0N=0X1F;                             //负端接GND
+  98   1              ADC0CF=0X2C;                    //左对齐，转换时钟2MHZ
+  99   1              ADC0CN=0X80;                    //写ADOBUSY启动AD
+ 100   1      }
+ 101          //********************************************
+ 102          void INT0_INIT(void)
+ 103          {
+ 104   1              IT01CF=0X05;                            //P0.5为INT0
+ 105   1              IT0=1;                                          //下降沿触发
+ 106   1      }
+ 107          //********************************************
+ 108          void TIMER_INIT(void)                    //定时/计数器初始化
+ 109          {
+ 110   1              TMOD=0x51;                                      //T0、T1方式1,T1计数方式
+ 111   1              CKCON=0;                                        //系统时钟12分频
+ 112   1      
+ 113   1              TL0=0x66;                                       
+ 114   1              TH0=0x3e;                               
+ 115   1      
+ 116   1              TL1=0X0;
+C51 COMPILER V8.08   4                                                                     07/06/2015 10:10:54 PAGE 3   
+
+ 117   1              TH1=0X0;                                        //计数器清0
+ 118   1              
+ 119   1              fp=T_C;
+ 120   1      
+ 121   1              TMR2CN=0X04;                            //16位自动重装
+ 122   1              TMR2RLL=0XF0;                           //10MS
+ 123   1              TMR2RLH=0XD8;
+ 124   1      
+ 125   1              TMR3CN=0X0C;                            //双8位自动重装入，系统时钟1/12
+ 126   1              TMR3RLL=0XE0;                           //定时100us
+ 127   1              TMR3RLH=0XFF;
+ 128   1      
+ 129   1              TR0=1;
+ 130   1              TR1=1;
+ 131   1      }
+ 132          //***********************************************
+ 133          void PCA_INIT(void)
+ 134          {
+ 135   1              PCA0CN=0X40;                            //允许PCA计数器、定时器
+ 136   1              PCA0MD=0;                                       //禁止看门狗定时器
+ 137   1      }
+ 138          //***********************************************
+ 139          void INT_INIT(void)
+ 140          {
+ 141   1              EX0=1;                                          //INIT0，键盘
+ 142   1              PX0=0;                                          //INT0为低优先级
+ 143   1              ET0=1;                                          //T0
+ 144   1              ET1=1;                                          //T1
+ 145   1              ET2=0;                                          //T2
+ 146   1              EIE1=0X0;                                       //0X08,允许ADC中断
+ 147   1              ES0=0;                                          //uart
+ 148   1              EA=1;
+ 149   1      
+ 150   1              
+ 151   1      
+ 152   1      }
+ 153          //**************************************************
+ 154          
+ 155          void Init_device(void) 
+ 156          {
+ 157   1              OSC_INIT();
+ 158   1              IO_INIT();
+ 159   1              XRAM_INIT();
+ 160   1              SMB_INIT();
+ 161   1              UART_INIT();
+ 162   1              DAC_INIT();
+ 163   1              ADC_INIT();
+ 164   1              INT0_INIT();
+ 165   1              TIMER_INIT();
+ 166   1              PCA_INIT();
+ 167   1              INT_INIT();
+ 168   1      }
+ 169          //**************************************************
+ 170          //--------------------------------------------------------
+ 171          void LCD_REST(void)
+ 172          {
+ 173   1              int i;
+ 174   1              LCD_RST=0;
+ 175   1              for(i=0;i<255;i++);
+ 176   1              LCD_RST=1;
+ 177   1      }
+ 178          //********************************************************
+C51 COMPILER V8.08   4                                                                     07/06/2015 10:10:54 PAGE 4   
+
+ 179          void LCD_WC(unsigned char command)                              //LCD写命令
+ 180          {
+ 181   1              while(RCOMADDR&0X80);                                                                                             
+             -                                                                                                                        
+             -               
+ 182   1              WCOMADDR=command;
+ 183   1      }
+ 184          //********************************************************
+ 185          void LCD_INIT(void)                                                        //LCD初始化
+ 186          {
+ 187   1              LCD_WC(0X30);                                                           //设为基本命令集
+ 188   1              LCD_WC(0X01);   
+ 189   1              LCD_WC(0X02);                                                           //将DDRAM填满20H，并设定DDRAM地址计数器为0
+ 190   1              LCD_WC(0X0C);                                                           //开整体显示
+ 191   1      }
+ 192          //***********************************************************
+ 193          
+ 194          void LCD_WD(unsigned char d)                                    //LCD写数据
+ 195          {
+ 196   1              while(RCOMADDR&0X80);
+ 197   1              WDATADDR=d;
+ 198   1      }
+ 199          //**********************************************************
+ 200          void LCD_HZ(unsigned char x,unsigned char temp[])                               //显示一行字符
+ 201          {
+ 202   1         int i=0;
+ 203   1         LCD_WC(x);                                                                                              //x代表位置，=0x80对应左上角
+ 204   1         while(temp[i]!=0)
+ 205   1               {
+ 206   2                      LCD_WD(temp[i]);
+ 207   2                      i++;
+ 208   2              }
+ 209   1      }
+ 210          //********************************************************
+ 211          void LCD_BYTE(unsigned char x,unsigned char temp)                               //显示一行字符
+ 212          {
+ 213   1         LCD_WC(x);                                                                                              //x代表位置，=0x80对应左上角
+ 214   1         LCD_WD(temp);
+ 215   1      }
+ 216          
+ 217          
+ 218          //*********************************************************
+ 219          void LCD_CLR(void)                                                              //LCD清屏
+ 220          {
+ 221   1                LCD_WC(0X01);
+ 222   1      }
+ 223          //********************************************************
+ 224          void KEY_INIT0(void) interrupt 0
+ 225          {
+ 226   1        key_num=KEYCS&0x0f;
+ 227   1       
+ 228   1        
+ 229   1      } 
+ 230          //*****T0中断服务***************************************
+ 231          void  TT0_INT0(void) interrupt 1
+ 232          {
+ 233   1          int j=0;
+ 234   1              TL0=0x66;                                               //0Xb0;
+ 235   1              TH0=0x3d;                                               //0X3c;每单位0.5微秒*50000*40
+ 236   1              fp--;
+ 237   1                  if(fp) return;
+ 238   1              TR1=0;
+C51 COMPILER V8.08   4                                                                     07/06/2015 10:10:54 PAGE 5   
+
+ 239   1                      fp=T_C;                      //1s
+ 240   1              f=65536*f1+256*TH1+TL1;
+ 241   1                      if(n==0)
+ 242   1                      {
+ 243   2                      count[n%11]=f;
+ 244   2                      }
+ 245   1                      else
+ 246   1                      {
+ 247   2                      if(abs(count[n%11-1]-f)>=10)
+ 248   2                      {         
+ 249   3                        for(j=0;j<=10;j++)
+ 250   3                        {
+ 251   4                         count[j]=f;
+ 252   4                        }
+ 253   3                  }
+ 254   2                        else
+ 255   2                             {
+ 256   3                                   count[n%11]=f;
+ 257   3                                  }
+ 258   2                      }
+ 259   1      
+ 260   1                      n++;
+ 261   1              flag=1;
+ 262   1              TH1=0;
+ 263   1              TL1=0;
+ 264   1              f1=0;
+ 265   1                      TR1=1;
+ 266   1           }
+ 267          //******************************************
+ 268          
+ 269          
+ 270          
+ 271          void TT1_INT1(void ) interrupt 3
+ 272          {
+ 273   1      f1++;
+ 274   1      }
+ 275          
+ 276          //*******************************************
+ 277          void  tolHZ(float s1)
+ 278          {  int term;
+ 279   1         term=(int)(s1*100);
+ 280   1      
+ 281   1      F_DISPLOW[0]=term/1000%10+0x30;
+ 282   1      F_DISPLOW[1]=term/100%10+0x30;
+ 283   1      F_DISPLOW[2]=0x2E;
+ 284   1      F_DISPLOW[3]=term/10%10+0x30;
+ 285   1      F_DISPLOW[4]=term%10+0x30;
+ 286   1      }
+ 287          //********************************************
+ 288          void  tofHZ(void)
+ 289          {
+ 290   1         
+ 291   1         
+ 292   1         F_DISPLOWHIGH[0]=f/100%10+0x30;
+ 293   1         F_DISPLOWHIGH[1]=f/10%10+0x30;
+ 294   1         F_DISPLOWHIGH[2]=f%10+0x30;
+ 295   1         F_DISPLOWHIGH[3]=0x2E;
+ 296   1         F_DISPLOWHIGH[4]=0x30;
+ 297   1       }
+ 298           //********************************************
+ 299           void  toHZ(void)
+ 300           {
+C51 COMPILER V8.08   4                                                                     07/06/2015 10:10:54 PAGE 6   
+
+ 301   1         
+ 302   1         F_DISPHIGH[0]=f/1000%10+0x30;
+ 303   1         F_DISPHIGH[1]=f/100%10+0x30;
+ 304   1         F_DISPHIGH[2]=f/10%10+0x30;
+ 305   1         F_DISPHIGH[3]=f%10+0x30;
+ 306   1         }
+ 307            //*******************************************
+ 308            void toKHZ(void)
+ 309            {
+ 310   1          if(f>=10000&&f<=99999)
+ 311   1              {
+ 312   2         F_DISPHIGHONE[0]=f/10000%10+0x30;
+ 313   2         F_DISPHIGHONE[1]=f/1000%10+0x30;
+ 314   2         F_DISPHIGHONE[2]=0x2E;
+ 315   2         F_DISPHIGHONE[3]=f/100%10+0x30;
+ 316   2         F_DISPHIGHONE[4]=f/10%10+0x30;
+ 317   2         }
+ 318   1         else
+ 319   1          {   F_DISPHIGHONE[0]=f/100000%10+0x30;
+ 320   2              F_DISPHIGHONE[1]=f/10000%10+0x30;
+ 321   2              F_DISPHIGHONE[2]=f/1000%10+0x30;
+ 322   2              F_DISPHIGHONE[3]=0x2E;
+ 323   2              F_DISPHIGHONE[4]=f/100%10+0x30;
+ 324   2              }
+ 325   1         }
+ 326             //******************************************
+ 327          
+ 328          
+ 329                  void toMHZ(void)
+ 330             {
+ 331   1              F_DISPHIGHTHREE[0]=f/1000000%10+0x30;
+ 332   1              F_DISPHIGHTHREE[1]=0x2E;
+ 333   1              F_DISPHIGHTHREE[2]=f/100000%10+0x30;
+ 334   1              F_DISPHIGHTHREE[3]=f/10000%10+0x30;
+ 335   1              F_DISPHIGHTHREE[4]=f/1000%10+0x30;
+ 336   1              }
+ 337                  //********************************************
+ 338           main()  
+ 339          {
+ 340   1          int xdata flag1=0;
+ 341   1              float  mean = 0;
+ 342   1              int i;
+ 343   1              Init_device();
+ 344   1              LCD_REST();
+ 345   1              LCD_INIT();
+ 346   1       
+ 347   1              LCD_REST();
+ 348   1              LCD_INIT();
+ 349   1      
+ 350   1              f=0;
+ 351   1              f1=0;
+ 352   1      
+ 353   1        while(1)
+ 354   1       {  
+ 355   2               LCD_HZ(0x80,"简易频率计");
+ 356   2              LCD_HZ(0x90, "设计：林先娜");
+ 357   2          if(flag)
+ 358   2         {
+ 359   3               if(f>=10&&f<=99)
+ 360   3              {
+ 361   4                        
+ 362   4                mean=(count[0]+count[1]+count[2]+count[3]+count[4]+count[5]+count[6]+count[7]+count[8]+count[9]+cou
+C51 COMPILER V8.08   4                                                                     07/06/2015 10:10:54 PAGE 7   
+
+             -nt[10])/11;                        //消抖
+ 363   4                tolHZ(mean);
+ 364   4                LCD_HZ(0x88,TAB_WORD);
+ 365   4                LCD_HZ(0x98,F_DISPLOW);
+ 366   4                flag=0;
+ 367   4               }
+ 368   3                 else if(f>=100&&f<= 999)
+ 369   3             {
+ 370   4          
+ 371   4                       tofHZ();        
+ 372   4                       LCD_HZ(0x88,TAB_WORD);
+ 373   4                       LCD_HZ(0x98,F_DISPLOWHIGH);
+ 374   4                       flag=0;
+ 375   4             }
+ 376   3                 else if (f>=1000&&f<=9999)
+ 377   3                 {
+ 378   4                    toHZ();      
+ 379   4                        LCD_HZ(0x88,TAB_WORD);
+ 380   4                        LCD_HZ(0x98,F_DISPHIGH);
+ 381   4                        flag=0;
+ 382   4                 }
+ 383   3                 else if(f>=10000&&f<=99999)
+ 384   3                 {
+ 385   4                toKHZ();
+ 386   4                        LCD_HZ(0x88,TAB_WORD);
+ 387   4                        LCD_HZ(0x98,F_DISPHIGHONE);
+ 388   4                        flag=0;
+ 389   4                 }
+ 390   3                 else if(f>=100000&&f<=999999)
+ 391   3             {
+ 392   4                  toKHZ();
+ 393   4                  LCD_HZ(0x88,TAB_WORD);
+ 394   4                  LCD_HZ(0x98,F_DISPHIGHONE);
+ 395   4                  flag=0;
+ 396   4                      }
+ 397   3                      else
+ 398   3                      {
+ 399   4                      toMHZ();
+ 400   4                      LCD_HZ(0x88,TAB_WORD);
+ 401   4                      LCD_HZ(0x98,F_DISPHIGHTHREE);
+ 402   4                      flag=0;
+ 403   4                      }
+ 404   3      
+ 405   3           }  
+ 406   2      }
+ 407   1      }
+*** WARNING C280 IN LINE 342 OF 4.C: 'i': unreferenced local variable
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1840    ----
+   CONSTANT SIZE    =     35    ----
+   XDATA SIZE       =   ----       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     88      15
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
